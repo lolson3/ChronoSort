@@ -1,39 +1,51 @@
-<#
-.SYNOPSIS
-Organizes files by date into a sibling output directory and maintains a manifest log.
-
-.DESCRIPTION
-ChronoSort scans specified source folders for date patterns, copies matched files into an organized output tree by Year/Month, and logs processed files in a CSV manifest. Can validate manifest integrity and clean missing entries.
-
-.PARAMETER SourceDirectories
-One or more source directories to process. Defaults to the current directory.
-
-.PARAMETER OutputSuffix
-Suffix appended to each source directory name to create the output directory. Defaults to '_organized'.
-
-.PARAMETER Rebuild
-When specified, deletes the organized directory completely and rebuilds it from scratch with all source files.
-
-.PARAMETER Validate
-When specified, verifies that all files listed in the manifest exist in the organized directory. Removes entries for missing files and updates the manifest.
-
-.EXAMPLE
-.\chronosort.ps1 C:\Users\Leif\Documents\source
-
-.EXAMPLE
-.\chronosort.ps1 C:\Users\Leif\Documents\source -Validate
-
-.EXAMPLE
-.\chronosort.ps1 C:\Users\Leif\Documents\source -Rebuild
-#>
 param(
     [Parameter(Mandatory=$false, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Position=0)]
     [string[]]$SourceDirectories = @('.'),
 
     [string]$OutputSuffix = '_organized',
     [switch]$Rebuild,
-    [switch]$Validate
+    [switch]$Validate,
+    [switch]$Help
 )
+
+
+function Show-Help {
+    Write-Host "ChronoSort - Usage and Options" -ForegroundColor Cyan
+    Write-Host "" 
+    Write-Host "Usage: ./chronosort.ps1 <SourceDirectory> [Options]"
+    Write-Host ""
+    Write-Host "Options:" 
+    Write-Host "  -Rebuild       Deletes the organized directory and rebuilds it from scratch."
+    Write-Host "  -Validate      Verifies manifest entries exist in the organized directory and removes missing entries."
+    Write-Host "  -Help          Shows this help text."
+    Write-Host ""
+    Write-Host "Examples:" 
+    Write-Host "  ./chronosort.ps1 C:\\Data\\Photos" 
+    Write-Host "  ./chronosort.ps1 C:\\Data\\Photos -Validate" 
+    Write-Host "  ./chronosort.ps1 C:\\Data\\Photos -Rebuild" 
+    Write-Host ""
+    Write-Host "Task Scheduler (quick guide):" -ForegroundColor Yellow
+    Write-Host "  1) Open Task Scheduler -> Create Task -> Give it a name." 
+    Write-Host "  2) Triggers: choose daily/at log on or custom schedule." 
+    Write-Host "  3) Actions -> Start a program:" 
+    Write-Host "       Program/script: powershell.exe" 
+    Write-Host "       Add arguments: -NoProfile -ExecutionPolicy Bypass -File \"C:\\path\\to\\chronosort.ps1\" \"C:\\path\\to\\source\" -Validate" 
+    Write-Host "  4) Set 'Start in' to the script folder path and configure Run whether user is logged on." 
+    Write-Host "  5) Save. Task Scheduler will run the script using the specified arguments." 
+    Write-Host ""
+}
+
+if ($Help) {
+    Show-Help
+    exit 0
+}
+
+# If no SourceDirectories were explicitly provided, show help and exit
+if (-not $PSBoundParameters.ContainsKey('SourceDirectories')) {
+    Write-Host "No source directory specified." -ForegroundColor Yellow
+    Show-Help
+    exit 1
+}
 
 $ErrorActionPreference = 'Stop'
 $monthNames = @(
@@ -324,6 +336,6 @@ foreach ($sourceDirectory in $SourceDirectories) {
             if (-not (Test-Path -Path $manifestPath)) {
                 @() | Export-Csv -Path $manifestPath -NoTypeInformation
             }
+                }
+            }
         }
-    }
-}

@@ -60,3 +60,21 @@ The manifest file is stored at:
 - Use `-Validate` to detect and remove manifest entries for files that have been deleted or failed to copy. This ensures the manifest stays in sync with the actual organized directory.
 - Use `-Rebuild` to delete and recreate the organized directory from scratch. This reprocesses all source files and creates a new manifest.
 - **Rebuild vs Validate**: Rebuild deletes the entire organized directory and rebuilds it from scratch; Validate only checks that organized files still exist and removes orphaned manifest entries.
+
+## Task Scheduler
+
+To run `chronosort.ps1` on a schedule via Windows Task Scheduler:
+
+1. Open Task Scheduler and choose "Create Task...".
+2. On the "General" tab give the task a name and optionally select "Run whether user is logged on".
+3. On the "Triggers" tab add a trigger (daily, at log on, etc.).
+4. On the "Actions" tab add a new action:
+	 - **Program/script:** `powershell.exe`
+	 - **Add arguments (example):**
+		 -NoProfile -ExecutionPolicy Bypass -File "C:\\path\\to\\chronosort.ps1" "C:\\path\\to\\source" -Validate
+	 - **Start in (optional):** `C:\path\to\script\folder`
+5. Save the task. You can test it by right-clicking and selecting "Run".
+
+Notes:
+- Use full absolute paths in the action arguments.
+- For a full rebuild, replace `-Validate` with `-Rebuild` in the arguments.
