@@ -1,0 +1,18 @@
+# PowerShell temporary files
+#.ps1xml
+*.pssc
+*.psrc
+
+# Logs
+*.log
+
+# OS Junk
+.DS_Store
+Thumbs.db
+
+# Editor Folders
+.vscode/
+.idea/
+
+# Test Output
+test-output/
