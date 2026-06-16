@@ -30,28 +30,28 @@ Run the script from PowerShell:
 
 ```powershell
 # Organize a single directory
-.\chronosort.ps1 C:\Users\Leif\Documents\SourceFiles
+.\chronosort.ps1 C:\Source\ExampleFiles
 
 # Organize multiple directories
-.\chronosort.ps1 C:\Data\Archive C:\Data\Downloads
+.\chronosort.ps1 C:\Source\ExampleFiles D:\ArchiveFiles
 
 # Rebuild the directory from scratch
-.\chronosort.ps1 C:\Users\Leif\Documents\SourceFiles -Rebuild
+.\chronosort.ps1 C:\Source\ExampleFiles -Rebuild
 
 # Verify manifest integrity and remove missing file entries
-.\chronosort.ps1 C:\Users\Leif\Documents\SourceFiles -Validate
+.\chronosort.ps1 C:\Source\ExampleFiles -Validate
 ```
 
 ## Output
 
-For a source directory named `Photos`, the script will create a sibling directory named `Photos_organized` and populate it like:
+For a source directory named `ExampleFiles`, the script will create a sibling directory named `ExampleFiles_organized` and populate it like:
 
-- `Photos_organized\2025\March\...`
-- `Photos_organized\2026\January\...`
+- `ExampleFiles_organized\2025\March\...`
+- `ExampleFiles_organized\2026\January\...`
 
 The manifest file is stored at:
 
-- `Photos_organized\manifest.csv`
+- `ExampleFiles_organized\manifest.csv`
 
 ## Notes
 
@@ -71,7 +71,7 @@ To run `chronosort.ps1` on a schedule via Windows Task Scheduler:
 4. On the "Actions" tab add a new action:
 	 - **Program/script:** `powershell.exe`
 	 - **Add arguments (example):**
-		 -NoProfile -ExecutionPolicy Bypass -File "C:\\path\\to\\chronosort.ps1" "C:\\path\\to\\source" -Validate
+		 -NoProfile -ExecutionPolicy Bypass -File "C:\\path\\to\\chronosort.ps1" "C:\\Source\\ExampleFiles" -Validate
 	 - **Start in (optional):** `C:\path\to\script\folder`
 5. Save the task. You can test it by right-clicking and selecting "Run".
 

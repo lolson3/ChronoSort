@@ -20,9 +20,9 @@ function Show-Help {
     Write-Host "  -Help          Shows this help text."
     Write-Host ""
     Write-Host "Examples:" 
-    Write-Host "  ./chronosort.ps1 C:\\Data\\Photos" 
-    Write-Host "  ./chronosort.ps1 C:\\Data\\Photos -Validate" 
-    Write-Host "  ./chronosort.ps1 C:\\Data\\Photos -Rebuild" 
+    Write-Host "  ./chronosort.ps1 C:\Source\ExampleFiles" 
+    Write-Host "  ./chronosort.ps1 C:\Source\ExampleFiles -Validate"
+    Write-Host "  ./chronosort.ps1 C:\Source\ExampleFiles -Rebuild"
     Write-Host ""
     Write-Host "Task Scheduler (quick guide):" -ForegroundColor Yellow
     Write-Host "  1) Open Task Scheduler -> Create Task -> Give it a name." 
