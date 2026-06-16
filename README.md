@@ -16,24 +16,30 @@ ChronoSort is a PowerShell script that scans specified source directories for fi
 Run the script from PowerShell:
 
 ```powershell
-.
-\chronosort.ps1 <SourceDirectory>
+.\chronosort.ps1 <SourceDirectory> [Options]
 ```
 
-Examples:
+### Parameters
+
+- **SourceDirectory**: Path to the source directory to organize (can specify multiple)
+- **-OutputSuffix**: Custom suffix for output directory (default: `_organized`)
+- **-Rebuild**: Deletes the organized directory completely and rebuilds it from scratch. Use when you want to start fresh or when the directory structure is corrupted.
+- **-Validate**: Verifies that all files listed in the manifest exist in the organized directory. Removes entries for missing files. Use when files have been manually deleted from the organized directory.
+
+### Examples
 
 ```powershell
 # Organize a single directory
-.
-\chronosort.ps1 C:\Users\Leif\Documents\SourceFiles
+.\chronosort.ps1 C:\Users\Leif\Documents\SourceFiles
 
 # Organize multiple directories
-.
-\chronosort.ps1 C:\Data\Archive C:\Data\Downloads
+.\chronosort.ps1 C:\Data\Archive C:\Data\Downloads
 
-# Rebuild the manifest and reprocess all matching files
-.
-\chronosort.ps1 C:\Users\Leif\Documents\SourceFiles -RebuildManifest
+# Rebuild the directory from scratch
+.\chronosort.ps1 C:\Users\Leif\Documents\SourceFiles -Rebuild
+
+# Verify manifest integrity and remove missing file entries
+.\chronosort.ps1 C:\Users\Leif\Documents\SourceFiles -Validate
 ```
 
 ## Output
@@ -50,4 +56,7 @@ The manifest file is stored at:
 ## Notes
 
 - Files are only copied when they contain a recognized date pattern.
-- The script avoids reprocessing files already listed in the manifest unless `-RebuildManifest` is used.
+- The script avoids reprocessing files already listed in the manifest unless `-Rebuild` is used.
+- Use `-Validate` to detect and remove manifest entries for files that have been deleted or failed to copy. This ensures the manifest stays in sync with the actual organized directory.
+- Use `-Rebuild` to delete and recreate the organized directory from scratch. This reprocesses all source files and creates a new manifest.
+- **Rebuild vs Validate**: Rebuild deletes the entire organized directory and rebuilds it from scratch; Validate only checks that organized files still exist and removes orphaned manifest entries.
