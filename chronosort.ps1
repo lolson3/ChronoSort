@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory=$false, ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Position=0)]
-    [string[]]$SourceDirectories = @('.'),
+    [string[]]$SourceDirectories,
 
     [string]$OutputSuffix = '_organized',
     [switch]$Rebuild,
@@ -47,6 +47,16 @@ if (-not $PSBoundParameters.ContainsKey('SourceDirectories')) {
     exit 1
 }
 
+$invalidSourceEntries = $SourceDirectories | Where-Object {
+    $_ -eq '.' -or $_ -eq './' -or $_ -eq '.\' -or $_ -eq '..' -or $_ -eq '../' -or $_ -eq '..\'
+}
+
+if ($invalidSourceEntries.Count -gt 0) {
+    Write-Host "Please specify an explicit source directory path, not '.' or '..'." -ForegroundColor Yellow
+    Show-Help
+    exit 1
+}
+
 $ErrorActionPreference = 'Stop'
 $monthNames = @(
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -57,12 +67,6 @@ $patterns = @(
     [regex]'(?<year>\d{4})(?<month>0[1-9]|1[0-2])(?<day>0[1-9]|[12]\d|3[01])',
     [regex]'(?<year>\d{4})-(?<month>0[1-9]|1[0-2])-(?<day>0[1-9]|[12]\d|3[01])'
 )
-
-$monthNameMap = @{
-    'january' = '01'; 'february' = '02'; 'march' = '03'; 'april' = '04';
-    'may' = '05'; 'june' = '06'; 'july' = '07'; 'august' = '08';
-    'september' = '09'; 'october' = '10'; 'november' = '11'; 'december' = '12'
-}
 
 function Get-DateFromText {
     param([string]$Text)
@@ -75,19 +79,6 @@ function Get-DateFromText {
                 Month = $match.Groups['month'].Value
                 Day = $match.Groups['day'].Value
                 Pattern = $pattern.ToString()
-            }
-        }
-    }
-
-    $match = $wrongMonthPattern.Match($Text)
-    if ($match.Success) {
-        $monthName = $match.Groups['month'].Value.Trim().ToLower()
-        if ($monthNameMap.ContainsKey($monthName)) {
-            return [pscustomobject]@{
-                Year = $match.Groups['year'].Value
-                Month = $monthNameMap[$monthName]
-                Day = '01'
-                Pattern = $wrongMonthPattern.ToString()
             }
         }
     }
@@ -214,13 +205,10 @@ foreach ($sourceDirectory in $SourceDirectories) {
 
     Write-Host "Processing source directory: $sourceRoot"
     $outputRoot = Get-OrganizedOutputRoot -SourceRoot $sourceRoot
-    if (-not (Test-Path -Path $outputRoot)) {
-        New-Item -Path $outputRoot -ItemType Directory | Out-Null
-    }
-
     $manifestPath = Join-Path -Path $outputRoot -ChildPath 'manifest.csv'
     $existingManifest = @{}
     $manifestEntries = @()
+    $outputRootCreated = $false
     $filesScanned = 0
     $filesAlreadyOrganized = 0
     $filesNewlyOrganized = 0
@@ -233,7 +221,6 @@ foreach ($sourceDirectory in $SourceDirectories) {
             Write-Host "Removing existing organized directory: $outputRoot"
             Remove-Item -Path $outputRoot -Recurse -Force
         }
-        New-Item -Path $outputRoot -ItemType Directory | Out-Null
     }
 
     if ((Test-Path -Path $manifestPath) -and (-not $Rebuild)) {
@@ -270,6 +257,11 @@ foreach ($sourceDirectory in $SourceDirectories) {
                 continue
             }
             $filesNewlyOrganized++
+
+            if (-not $outputRootCreated -and -not (Test-Path -Path $outputRoot)) {
+                New-Item -Path $outputRoot -ItemType Directory -Force | Out-Null
+                $outputRootCreated = $true
+            }
 
             $incorrectSort = Detect-IncorrectSort -RelativePath (Split-Path -Path $relativePath -Parent)
             $year = $dateMetadata.Year
@@ -332,10 +324,7 @@ foreach ($sourceDirectory in $SourceDirectories) {
             Write-Host "All $filesScanned file(s) scanned - all files already organized."
         }
         else {
-            Write-Host "No files with recognized date patterns found."
-            if (-not (Test-Path -Path $manifestPath)) {
-                @() | Export-Csv -Path $manifestPath -NoTypeInformation
-            }
-                }
-            }
+            Write-Host "No files with recognized date patterns found. No changes were made."
         }
+    }
+}
